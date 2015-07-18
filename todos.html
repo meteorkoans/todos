@@ -1,4 +1,5 @@
 <template name="todos">
+    <p>{{_id}}</p>
     {{> addTodo}}
     <ul>
         {{#each todo}}
@@ -29,6 +30,27 @@
 {{/if}}
 </template>
 
+<template name="addList">
+    <form>Create a list:
+        <input type-="text" placeholder="List name here ..." name="listName">
+    </form>
+</template>
+
+<template name="listPage">
+    <h2>Tasks: {{name}}</h2>
+    {{> todos}}
+</template>
+
+<template name="lists">
+    <h2>Lists</h2>
+    {{> addList}}
+    <ul>
+        {{#each list}}
+            <li><a href="{{pathFor route='listPage'}}">{{name}}</a></li>
+        {{/each}}
+    </ul>
+</template>
+
 <template name="home">
     <p>Welcome to the Todos application</p>
 </template>
@@ -52,6 +74,7 @@
 <template name="main">
     <h1>Todos</h1>
     {{> navigation}}
+    {{> lists}}
     {{> yield}}
     <hr />
     <p>Copyright &copy; Todos, 2014-2015.</p>
