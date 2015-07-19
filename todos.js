@@ -215,8 +215,8 @@ if (Meteor.isServer) {
     });
 
     Meteor.publish('todos', function(currentList) {
-        var currentUser = this.user.Id;
-        return Todos.find({ createdBy: currentUse, listId: currentList });
+        var currentUser = this.userId;
+        return Todos.find({ createdBy: currentUser, listId: currentList });
     });
 }
 
@@ -236,9 +236,9 @@ Router.route('/list/:_id', {
             this.next();
         }
     },
-    subscriptions: function() {
+    waitOn: function() {
         var currentList = this.params._id;
-        return [Meteor.subscribe('todos'), Meteor.subscribe('todos')];
+        return [Meteor.subscribe('todos'), Meteor.subscribe('lists')];
     }
 });
 
@@ -252,11 +252,12 @@ Router.route('/login');
 Router.route('/', {
     name: 'home',
     template: 'home',
-    subscriptions: function() {
+    waitOn: function() {
         return Meteor.subscribe('lists');
     }
 });
 
 Router.configure({
-    layoutTemplate: 'main'
+    layoutTemplate: 'main',
+    loadingTemplate: 'loading'
 });
