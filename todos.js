@@ -209,7 +209,15 @@ if (Meteor.isClient) {
 }
 
 if (Meteor.isServer) {
+    Meteor.publish('lists', function() {
+        var currentUser = this.userId;
+        return Lists.find({ createdBy: currentUser });
+    });
 
+    Meteor.publish('todos', function(currentList) {
+        var currentUser = this.user.Id;
+        return Todos.find({ createdBy: currentUse, listId: currentList });
+    });
 }
 
 Router.route('/list/:_id', {
@@ -227,17 +235,28 @@ Router.route('/list/:_id', {
         } else {
             this.next();
         }
+    },
+    subscriptions: function() {
+        var currentList = this.params._id;
+        return [Meteor.subscribe('todos'), Meteor.subscribe('todos')];
     }
 });
+
 Router.route('/register', {
     name: 'register',
     template: 'register'
 });
+
 Router.route('/login');
+
 Router.route('/', {
     name: 'home',
-    template: 'home'
+    template: 'home',
+    subscriptions: function() {
+        return Meteor.subscribe('lists');
+    }
 });
+
 Router.configure({
     layoutTemplate: 'main'
 });
