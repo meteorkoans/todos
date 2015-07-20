@@ -36,18 +36,21 @@ if (Meteor.isClient) {
 
     Template.addTodo.events({
         'submit form': function(event) {
+
             event.preventDefault();
+
             var todoName = $('[name="todoName"]').val();
             var currentList = this._id;
-            var currentUser = Meteor.userId();
-            Todos.insert({
-                name: todoName,
-                completed: false,
-                createdAt: new Date(),
-                listId: currentList,
-                createdBy: currentUser
-            });
-            $('[name="todoName"]').val('');
+
+            Meteor.call('createListItem', todoName, currentList);
+
+  /*              function(error, results) {
+                if (error) {
+                    console.log(error.reason);
+                } else {
+                    $('[name="todoName"]').val('');
+                }*/
+
         }
     });
 
@@ -248,6 +251,36 @@ if (Meteor.isServer) {
             }
 
             Lists.insert(data);
+        },
+        'createListItem': function(todoName, currentList) {
+
+            var currentUser = Meteor.userId();
+
+            check(todoName, String);
+            check(currentList, String);
+
+            if (todoName == '') {
+                todoName = defaultName(currentUser);
+            }
+
+            var data = {
+                name: todoName,
+                completed: false,
+                createdAt: new Date(),
+                listId: currentList,
+                createdBy: currentUser
+            };
+
+            if (!currentUser) {
+                throw new Meteor.Error('not-logged-in', 'You are not logged-in');
+            }
+
+            var currentList = Lists.findOne(currentList);
+            if (currentList.createdBy != currentUser) {
+                throw new Meteor.Error('invalid-user', 'You do not own that list');
+            }
+
+            return Todos.insert(data);
         }
     });
 }
@@ -270,7 +303,7 @@ Router.route('/list/:_id', {
     },
     waitOn: function() {
         var currentList = this.params._id;
-        return [Meteor.subscribe('todos'), Meteor.subscribe('lists')];
+        return [Meteor.subscribe('todos', currentList), Meteor.subscribe('lists')];
     }
 });
 
